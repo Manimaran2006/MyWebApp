@@ -8,6 +8,6 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "Hello from Jenkins + Tomcat + GitHub CI/CD!";
+        return "Hello Bro! My Spring Boot Application is Running Successfully!";
     }
 }
