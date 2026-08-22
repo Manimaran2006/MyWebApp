@@ -8,6 +8,6 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "My Spring Boot Application is Running Successfully. Thank you UsersSSSSSS^^^^";
+        return "My Spring Boot Application is Running Successfully. Thank you Customers for using our application.";
     }
 }
