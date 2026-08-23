@@ -62,10 +62,10 @@
 
     <!-- Nexus Repository -->
     <distributionManagement>
-     <repository>
+    <repository>
         <id>nexus-releases</id>
         <name>Nexus Releases</name>
         <url>http://3.230.171.168:8081/repository/myapp-releases/</url>
-     </repository>
-   </distributionManagement>
+    </repository>
+</distributionManagement>
 </project>
