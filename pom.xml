@@ -65,7 +65,7 @@
     <repository>
         <id>nexus-releases</id>
         <name>Nexus Releases</name>
-        <url>http://3.230.171.168:8081/repository/myapp-releases/</url>
+        <url>http://44.201.24.54:8081/repository/myapp-releases/</url>
     </repository>
 </distributionManagement>
 </project>
