@@ -31,11 +31,11 @@ pipeline {
             }
         }
 
-        stage('Maven Build') {
+        stage('Test') {
             steps {
-                echo '===== MAVEN BUILD ====='
+                echo '===== RUNNING TESTS ====='
 
-               mvn -s /var/lib/jenkins/.m2/empty-settings.xml clean package -DskipTests
+                sh 'mvn -s /var/lib/jenkins/.m2/empty-settings.xml test'
             }
         }
 
