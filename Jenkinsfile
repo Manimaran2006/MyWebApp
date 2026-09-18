@@ -35,7 +35,7 @@ pipeline {
             steps {
                 echo '===== MAVEN BUILD ====='
 
-                sh 'mvn clean package -DskipTests'
+               mvn -s /var/lib/jenkins/.m2/empty-settings.xml clean package -DskipTests
             }
         }
 
