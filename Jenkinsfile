@@ -7,27 +7,24 @@ pipeline {
         GITHUB_CREDENTIALS = 'gitHub'
 
         SONAR_TOKEN = credentials('sonarqube-token')
-        SONAR_HOST_URL = 'http://18.232.146.38:9000'
+        SONAR_HOST_URL = 'http://32.196.138.227:9000'
 
         NEXUS_CREDENTIALS = 'nexus-credentials'
 
         TOMCAT_CREDENTIALS = 'Tomcat-credential'
-        TOMCAT_URL = 'http://34.205.85.6:8080'
+        TOMCAT_URL = 'http://100.52.170.98:8080'
 
         APP_NAME = 'MyWebApp'
     }
 
     stages {
 
-        stage('Checkout') {
-            steps {
+        stage('Checkout') 
+        {
+            steps 
+            {
                 echo '===== CHECKOUT FROM GITHUB ====='
-
-                git(
-                    url: 'https://github.com/Manimaran2006/MyWebApp.git',
-                    branch: 'main',
-                    credentialsId: "${GITHUB_CREDENTIALS}"
-                )
+                checkout scm
             }
         }
 
@@ -196,7 +193,7 @@ Nexus        : SUCCESS
 Tomcat       : SUCCESS
 
 Application:
-http://3.238.44.12:8080/MyWebApp
+http://44.198.158.84:8080/MyWebApp
 
 ==========================================
 '''
