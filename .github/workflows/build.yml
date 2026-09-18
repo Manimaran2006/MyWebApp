@@ -21,8 +21,12 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Run Tests
+        run: mvn test -f pom.xml
+
       - name: Build with Maven
-        run: mvn clean package -f pom.xml
+        run: mvn package -f pom.xml
 
       - name: Show generated WAR
         run: ls -lh target/*.war
+        
