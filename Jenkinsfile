@@ -61,6 +61,21 @@ pipeline {
                 '''
             }
         }
+        
+        stage('Security Scan') 
+        {
+            steps 
+            {
+                echo '===== TRIVY SECURITY SCAN ====='
+
+                sh '''
+                    trivy fs \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    .
+                '''
+            }
+        }
 
         stage('Deploy to Nexus') {
             steps {
