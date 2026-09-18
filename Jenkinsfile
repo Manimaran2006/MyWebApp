@@ -215,7 +215,7 @@ Check the FIRST ERROR in Console Output.
         }
 
         always {
-            echo '===== PIPELINE COMPLETED ====='
+            echo '======= PIPELINE COMPLETED ======='
         }
     }
 }
