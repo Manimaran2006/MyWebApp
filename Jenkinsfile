@@ -19,8 +19,12 @@ pipeline {
 
     stages {
 
+        // =========================================================
+        // 1. CHECKOUT
+        // =========================================================
         stage('Checkout') {
             steps {
+
                 echo '===== CHECKOUT FROM GITHUB ====='
 
                 git(
@@ -31,54 +35,76 @@ pipeline {
             }
         }
 
+
+        // =========================================================
+        // 2. MAVEN BUILD
+        // =========================================================
+        stage('Maven Build') {
+            steps {
+
+                echo '===== MAVEN BUILD ====='
+
+                sh 'mvn -s /var/lib/jenkins/.m2/empty-settings.xml clean package -DskipTests'
+            }
+        }
+
+
+        // =========================================================
+        // 3. TEST
+        // =========================================================
         stage('Test') {
             steps {
+
                 echo '===== RUNNING TESTS ====='
 
                 sh 'mvn -s /var/lib/jenkins/.m2/empty-settings.xml test'
             }
         }
 
-        stage('Test') {
-            steps {
-                echo '===== RUNNING TESTS ====='
 
-                sh 'mvn test'
-            }
-        }
-
+        // =========================================================
+        // 4. SONARQUBE
+        // =========================================================
         stage('SonarQube Analysis') {
-
             steps {
-        
+
                 echo '===== SONARQUBE ANALYSIS ====='
-        
+
                 sh '''
-                    mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                    mvn -s /var/lib/jenkins/.m2/empty-settings.xml \
+                        org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                         -Dsonar.projectKey=MyWebApp \
                         -Dsonar.host.url=${SONAR_HOST_URL} \
                         -Dsonar.token=${SONAR_TOKEN}
                 '''
             }
         }
-        
-        stage('Security Scan') 
-        {
-            steps 
-            {
+
+
+        // =========================================================
+        // 5. TRIVY SECURITY SCAN
+        // =========================================================
+        stage('Security Scan') {
+            steps {
+
                 echo '===== TRIVY SECURITY SCAN ====='
 
                 sh '''
                     trivy fs \
-                    --severity HIGH,CRITICAL \
-                    --exit-code 1 \
-                    .
+                        --severity HIGH,CRITICAL \
+                        --exit-code 1 \
+                        .
                 '''
             }
         }
 
+
+        // =========================================================
+        // 6. DEPLOY TO NEXUS
+        // =========================================================
         stage('Deploy to Nexus') {
             steps {
+
                 echo '===== DEPLOYING TO NEXUS ====='
 
                 withCredentials([
@@ -92,19 +118,19 @@ pipeline {
                     sh '''
                         echo "===== CREATING MAVEN SETTINGS ====="
 
-                        mkdir -p ~/.m2
+                        mkdir -p /var/lib/jenkins/.m2
 
-                        cat > ~/.m2/settings.xml <<EOF
-                <settings>
-                    <servers>
-                        <server>
-                            <id>nexus-releases</id>
-                            <username>${NEXUS_USER}</username>
-                            <password>${NEXUS_PASSWORD}</password>
-                        </server>
-                    </servers>
-                </settings>
-                EOF
+                        cat > /var/lib/jenkins/settings.xml <<EOF
+<settings>
+    <servers>
+        <server>
+            <id>nexus-releases</id>
+            <username>${NEXUS_USER}</username>
+            <password>${NEXUS_PASSWORD}</password>
+        </server>
+    </servers>
+</settings>
+EOF
 
                         echo "===== CHECKING WAR ====="
 
@@ -112,9 +138,9 @@ pipeline {
 
                         echo "===== DEPLOYING TO NEXUS ====="
 
-                        mvn deploy \
+                        mvn clean deploy \
                             -DskipTests \
-                            -s ~/.m2/settings.xml
+                            -s /var/lib/jenkins/settings.xml
 
                         echo "===== NEXUS DEPLOYMENT COMPLETED ====="
                     '''
@@ -122,8 +148,13 @@ pipeline {
             }
         }
 
+
+        // =========================================================
+        // 7. DEPLOY TO TOMCAT
+        // =========================================================
         stage('Deploy to Tomcat') {
             steps {
+
                 echo '===== DEPLOYING WAR TO TOMCAT ====='
 
                 withCredentials([
@@ -161,8 +192,13 @@ pipeline {
             }
         }
 
+
+        // =========================================================
+        // 8. VERIFY DEPLOYMENT
+        // =========================================================
         stage('Verify Deployment') {
             steps {
+
                 echo '===== VERIFYING TOMCAT APPLICATION ====='
 
                 sh '''
@@ -172,6 +208,7 @@ pipeline {
                         "$TOMCAT_URL/${APP_NAME}/"
 
                     echo ""
+
                     echo "=========================================="
                     echo "APPLICATION DEPLOYED SUCCESSFULLY"
                     echo "=========================================="
@@ -180,9 +217,14 @@ pipeline {
         }
     }
 
+
+    // =============================================================
+    // POST ACTIONS
+    // =============================================================
     post {
 
         success {
+
             echo '''
 ==========================================
           PIPELINE SUCCESS
@@ -192,17 +234,20 @@ GitHub       : SUCCESS
 Maven Build  : SUCCESS
 Tests        : SUCCESS
 SonarQube    : SUCCESS
+Trivy        : SUCCESS
 Nexus        : SUCCESS
 Tomcat       : SUCCESS
 
 Application:
-http://44.198.158.84:8080/MyWebApp
+http://100.52.170.98:8080/MyWebApp
 
 ==========================================
 '''
         }
 
+
         failure {
+
             echo '''
 ==========================================
           PIPELINE FAILED
@@ -214,7 +259,9 @@ Check the FIRST ERROR in Console Output.
 '''
         }
 
+
         always {
+
             echo '======= PIPELINE COMPLETED ======='
         }
     }
