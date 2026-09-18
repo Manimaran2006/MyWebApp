@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1</version>
         <relativePath/>
     </parent>
 
@@ -18,7 +18,7 @@
     <artifactId>MyWebApp</artifactId>
     <version>0.0.1</version>
 
-    <!-- WAR for Tomcat -->
+    <!-- WAR deployment for Tomcat -->
     <packaging>war</packaging>
 
     <!-- Java -->
@@ -29,11 +29,13 @@
     <!-- Dependencies -->
     <dependencies>
 
+        <!-- Spring MVC / Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
+        <!-- Spring Boot Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
@@ -44,28 +46,31 @@
 
     <!-- Build -->
     <build>
-    <plugins>
+        <plugins>
 
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin>
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
 
-        <plugin>
-            <groupId>org.sonarsource.scanner.maven</groupId>
-            <artifactId>sonar-maven-plugin</artifactId>
-            <version>5.5.0.6356</version>
-        </plugin>
+            <!-- SonarQube -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>5.5.0.6356</version>
+            </plugin>
 
-     </plugins>
-  </build>
+        </plugins>
+    </build>
 
     <!-- Nexus Repository -->
     <distributionManagement>
-    <repository>
-        <id>nexus-releases</id>
-        <name>Nexus Releases</name>
-        <url>http://100.62.93.211:8081/repository/myapp-releases/</url>
-    </repository>
-</distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>Nexus Releases</name>
+            <url>http://13.221.137.96:8081/repository/myapp-releases/</url>
+        </repository>
+    </distributionManagement>
+
 </project>
