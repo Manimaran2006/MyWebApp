@@ -29,4 +29,9 @@ jobs:
 
       - name: Show generated WAR
         run: ls -lh target/*.war
-        
+
+              - name: SonarQube Analysis
+        run: mvn sonar:sonar
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
