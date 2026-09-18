@@ -12,7 +12,7 @@ pipeline {
         NEXUS_CREDENTIALS = 'nexus-credentials'
 
         TOMCAT_CREDENTIALS = 'Tomcat-credential'
-        TOMCAT_URL = 'http://100.52.170.98.:8080'
+        TOMCAT_URL = 'http://100.52.170.98:8080'
 
         APP_NAME = 'MyWebApp'
     }
