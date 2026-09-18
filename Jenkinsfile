@@ -111,55 +111,53 @@ pipeline {
         // NEXUS DEPLOYMENT
         // ==========================================
 
-        stage('Deploy to Nexus') {
-            steps {
+       stage('Deploy to Nexus') {
+    steps {
 
-                echo '===== DEPLOYING TO NEXUS ====='
+        echo '===== DEPLOYING TO NEXUS ====='
 
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: "${NEXUS_CREDENTIALS}",
-                        usernameVariable: 'NEXUS_USER',
-                        passwordVariable: 'NEXUS_PASSWORD'
-                    )
-                ]) {
+        withCredentials([
+            usernamePassword(
+                credentialsId: "${NEXUS_CREDENTIALS}",
+                usernameVariable: 'NEXUS_USER',
+                passwordVariable: 'NEXUS_PASSWORD'
+            )
+        ]) {
 
-                    sh '''
-                        echo "===== CREATING MAVEN SETTINGS ====="
+            sh '''
+                echo "===== CREATING MAVEN SETTINGS ====="
 
-                        mkdir -p ~/.m2
+                cat > /var/lib/jenkins/settings.xml <<EOF
+                <settings>
+                    <servers>
+                        <server>
+                            <id>nexus-releases</id>
+                            <username>${NEXUS_USER}</username>
+                            <password>${NEXUS_PASSWORD}</password>
+                        </server>
+                    </servers>
+                </settings>
+                EOF
 
-                        cat > ~/.m2/settings.xml <<EOF
-<settings>
-    <servers>
-        <server>
-            <id>nexus-releases</id>
-            <username>${NEXUS_USER}</username>
-            <password>${NEXUS_PASSWORD}</password>
-        </server>
-    </servers>
-</settings>
-EOF
+                echo "===== CHECKING MAVEN SETTINGS ====="
 
-                        echo "===== CHECKING MAVEN SETTINGS ====="
+                cat /var/lib/jenkins/settings.xml
 
-                        cat ~/.m2/settings.xml
+                echo "===== CHECKING WAR ====="
 
-                        echo "===== CHECKING WAR ====="
+                ls -lh target/*.war
 
-                        ls -lh target/*.war
+                echo "===== DEPLOYING TO NEXUS ====="
 
-                        echo "===== DEPLOYING TO NEXUS ====="
+                mvn clean deploy \
+                    -DskipTests \
+                    -s /var/lib/jenkins/settings.xml
 
-                        mvn deploy \
-                            -DskipTests \
-                            -s ~/.m2/settings.xml
-
-                        echo "===== NEXUS DEPLOYMENT COMPLETED ====="
-                    '''
-                }
-            }
+                echo "===== NEXUS DEPLOYMENT COMPLETED ====="
+            '''
         }
+    }
+}
 
 
         // ==========================================
