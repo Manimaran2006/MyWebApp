@@ -26,3 +26,6 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean verify
+
+      - name: Maven Test
+        run: mvn test
