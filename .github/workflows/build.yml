@@ -29,3 +29,9 @@ jobs:
 
       - name: Maven Test
         run: mvn test
+
+      - name: SonarQube Analysis
+        run: |
+          mvn sonar:sonar \   
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -.Dsonar.token=${{ secrets.SONARQUBE_TOKEN }}
