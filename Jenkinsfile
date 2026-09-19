@@ -7,12 +7,12 @@ pipeline {
         GITHUB_CREDENTIALS = 'gitHub'
 
         SONAR_TOKEN = credentials('sonarqube-token')
-        SONAR_HOST_URL = 'http://44.195.37.186:9000'
+        SONAR_HOST_URL = 'http://98.80.200.139:9000'
 
         NEXUS_CREDENTIALS = 'nexus-credentials'
 
         TOMCAT_CREDENTIALS = 'Tomcat-credential'
-        TOMCAT_URL = 'http://3.239.233.141:8080'
+        TOMCAT_URL = 'http://44.200.26.53:8080'
 
         APP_NAME = 'MyWebApp'
     }
@@ -259,7 +259,7 @@ Nexus        : SUCCESS
 Tomcat       : SUCCESS
 
 Application:
-http://44.201.22.194:8080/MyWebApp
+http://44.214.44.86:8080/MyWebApp
 
 ==========================================
 '''
