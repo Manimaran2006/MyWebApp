@@ -65,3 +65,19 @@ jobs:
           curl -u "$TOMCAT_USERNAME:$TOMCAT_PASSWORD" \
             -T target/MyWebApp-0.0.1.war \
             "$TOMCAT_URL/manager/text/deploy?path=/MyWebApp&update=true"
+      
+      - name: Slack Success Notification
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Content-type: application/json" \
+            --data "{\"text\":\"✅ MyWebApp CI/CD pipeline SUCCESS! Branch: ${{ github.ref_name }} | Commit: ${{ github.sha }}\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}"
+
+      - name: Slack Failure Notification
+        if: failure()
+        run: |
+          curl -X POST \
+            -H "Content-type: application/json" \
+            --data "{\"text\":\"❌ MyWebApp CI/CD pipeline FAILED! Branch: ${{ github.ref_name }} | Check GitHub Actions: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}"
