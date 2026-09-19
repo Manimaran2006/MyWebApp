@@ -7,12 +7,12 @@ pipeline {
         GITHUB_CREDENTIALS = 'gitHub'
 
         SONAR_TOKEN = credentials('sonarqube-token')
-        SONAR_HOST_URL = 'http://32.196.138.227:9000'
+        SONAR_HOST_URL = 'http://44.211.91.245:9000'
 
         NEXUS_CREDENTIALS = 'nexus-credentials'
 
         TOMCAT_CREDENTIALS = 'Tomcat-credential'
-        TOMCAT_URL = 'http://100.52.170.98:8080'
+        TOMCAT_URL = 'http://18.233.200.71:8080'
 
         APP_NAME = 'MyWebApp'
     }
@@ -121,16 +121,16 @@ pipeline {
                         mkdir -p /var/lib/jenkins/.m2
 
                         cat > /var/lib/jenkins/settings.xml <<EOF
-<settings>
-    <servers>
-        <server>
-            <id>nexus-releases</id>
-            <username>${NEXUS_USER}</username>
-            <password>${NEXUS_PASSWORD}</password>
-        </server>
-    </servers>
-</settings>
-EOF
+                            <settings>
+                                <servers>
+                                    <server>
+                                        <id>nexus-releases</id>
+                                        <username>${NEXUS_USER}</username>
+                                        <password>${NEXUS_PASSWORD}</password>
+                                    </server>
+                                </servers>
+                            </settings>
+                            EOF
 
                         echo "===== CHECKING WAR ====="
 
@@ -239,7 +239,7 @@ Nexus        : SUCCESS
 Tomcat       : SUCCESS
 
 Application:
-http://100.52.170.98:8080/MyWebApp
+http://100.29.191.244:8080/MyWebApp
 
 ==========================================
 '''
