@@ -39,6 +39,9 @@ jobs:
 
       - name: SonarQube Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+          scanMetadataReportFile: target/sonar/report-task.txt
+          pollingTimeoutSec: 300
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
