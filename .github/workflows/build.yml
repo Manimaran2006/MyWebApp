@@ -34,4 +34,5 @@ jobs:
         run: |
           mvn sonar:sonar \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.token=${{ secrets.SONARQUBE_TOKEN }}
+            -Dsonar.token=${{ secrets.SONARQUBE_TOKEN }} \
+            -Dsonar.projectKey=MyWebApp
