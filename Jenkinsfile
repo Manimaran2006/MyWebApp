@@ -7,12 +7,12 @@ pipeline {
         GITHUB_CREDENTIALS = 'gitHub'
 
         SONAR_TOKEN = credentials('sonarqube-token')
-        SONAR_HOST_URL = 'http://32.196.138.227:9000'
+        SONAR_HOST_URL = 'http://44.195.37.186:9000'
 
         NEXUS_CREDENTIALS = 'nexus-credentials'
 
         TOMCAT_CREDENTIALS = 'Tomcat-credential'
-        TOMCAT_URL = 'http://100.52.170.98:8080'
+        TOMCAT_URL = 'http://3.239.233.141:8080'
 
         APP_NAME = 'MyWebApp'
     }
@@ -112,17 +112,17 @@ pipeline {
         // ==========================================
 
        stage('Deploy to Nexus') {
-    steps {
+        steps {
 
-        echo '===== DEPLOYING TO NEXUS ====='
+            echo '===== DEPLOYING TO NEXUS ====='
 
-        withCredentials([
-            usernamePassword(
-                credentialsId: "${NEXUS_CREDENTIALS}",
-                usernameVariable: 'NEXUS_USER',
-                passwordVariable: 'NEXUS_PASSWORD'
-            )
-        ]) {
+            withCredentials([
+                usernamePassword(
+                    credentialsId: "${NEXUS_CREDENTIALS}",
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASSWORD'
+                )
+            ]) {
 
             sh '''
                 echo "===== CREATING MAVEN SETTINGS ====="
@@ -259,7 +259,7 @@ Nexus        : SUCCESS
 Tomcat       : SUCCESS
 
 Application:
-http://100.52.170.98:8080/MyWebApp
+http://44.201.22.194:8080/MyWebApp
 
 ==========================================
 '''
