@@ -55,3 +55,13 @@ jobs:
           mvn deploy \
             -DskipTests \
             -s settings.xml
+
+      - name: Deploy to Tomcat
+        env:
+          TOMCAT_URL: ${{ secrets.TOMCAT_URL }}
+          TOMCAT_USERNAME: ${{ secrets.TOMCAT_USERNAME}}
+          TOMCAT_PASSWORD: ${{ secrets.TOMCAT_PASSWORD}}
+        run: |
+          curl -u "$TOMCAT_USERNAME:$TOMCAT_PASSWORD" \
+            -T target/MyWebApp-0.0.1.war \
+            "$TOMCAT_URL/manager/text/deploy?path=/MyWebApp&update=true"
