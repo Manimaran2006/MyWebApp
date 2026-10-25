@@ -3,7 +3,9 @@ pipeline {
     agent any
 
     environment {
-        TOMCAT_URL = 'http://172.31.27.60:8080'
+        TOMCAT_URL = 'http://54.198.234.225:8080'
+        WAR_FILE = 'target/MyWebApp-0.0.1.war'
+        APP_PATH = '/myapp'
     }
 
     stages {
@@ -15,13 +17,15 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn -B clean package -DskipTests'
+                sh 'chmod +x mvnw'
+                sh './mvnw -B clean package -DskipTests'
             }
         }
 
         stage('Verify WAR') {
             steps {
-                sh 'test -f target/MyWebApp.war'
+                sh 'test -f target/MyWebApp-0.0.1.war'
+                sh 'ls -lh target/*.war'
             }
         }
 
@@ -35,11 +39,10 @@ pipeline {
                 ]) {
                     sh '''
                         set +x
-
                         curl --fail --show-error \
-                            --user "$TOMCAT_CREDS" \
-                            --upload-file target/MyWebApp.war \
-                            "$TOMCAT_URL/manager/text/deploy?path=/&update=true"
+                          --user "$TOMCAT_CREDS" \
+                          --upload-file "$WAR_FILE" \
+                          "$TOMCAT_URL/manager/text/deploy?path=$APP_PATH&update=true"
                     '''
                 }
             }
@@ -50,7 +53,7 @@ pipeline {
                 sh '''
                     sleep 5
                     curl --fail --show-error \
-                        "$TOMCAT_URL/"
+                      "$TOMCAT_URL$APP_PATH/"
                 '''
             }
         }
