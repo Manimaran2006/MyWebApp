@@ -3,7 +3,8 @@ pipeline {
     agent any
 
     environment {
-        TOMCAT_HOST = '172.31.23.181'
+        TOMCAT_HOST = '52.90.149.225'
+        TOMCAT_PORT = '8080'
         APP_NAME    = 'ROOT'
     }
 
@@ -20,69 +21,92 @@ pipeline {
             }
         }
 
-        stage('Verify WAR') {
+        stage('Verify WAR File') {
             steps {
                 sh '''
                     set -eu
-                    ls -lh target/*.war
-                    test "$(find target -maxdepth 1 -type f -name '*.war' | wc -l)" -gt 0
+
+                    WAR_FILE=$(find target -maxdepth 1 -type f -name "*.war" | head -n 1)
+
+                    if [ -z "$WAR_FILE" ]; then
+                        echo "ERROR: WAR file not found in target directory."
+                        exit 1
+                    fi
+
+                    echo "WAR file found:"
+                    ls -lh "$WAR_FILE"
                 '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn -B test'
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
                 withCredentials([
-                    sshUserPrivateKey(
-                        credentialsId: 'tomcat-ssh-key',
-                        keyFileVariable: 'SSH_KEY',
-                        usernameVariable: 'SSH_USER'
+                    usernamePassword(
+                        credentialsId: 'tomcat-credentials',
+                        usernameVariable: 'TOMCAT_USER',
+                        passwordVariable: 'TOMCAT_PASS'
                     )
                 ]) {
                     sh '''
                         set -eu
 
-                        WAR_FILE=$(find target -maxdepth 1 \
-                            -type f -name "*.war" | head -n 1)
+                        WAR_FILE=$(find target -maxdepth 1 -type f -name "*.war" | head -n 1)
 
-                        test -f "$WAR_FILE"
+                        if [ -z "$WAR_FILE" ]; then
+                            echo "ERROR: No WAR file available for deployment."
+                            exit 1
+                        fi
 
-                        echo "Preparing SSH connection..."
-                        mkdir -p "$HOME/.ssh"
-                        chmod 700 "$HOME/.ssh"
+                        echo "Deploying application to Tomcat..."
 
-                        ssh-keyscan -H "$TOMCAT_HOST" \
-                            >> "$HOME/.ssh/known_hosts"
-                        chmod 600 "$HOME/.ssh/known_hosts"
+                        curl --fail --show-error \
+                            --connect-timeout 10 \
+                            --max-time 180 \
+                            --user "$TOMCAT_USER:$TOMCAT_PASS" \
+                            --upload-file "$WAR_FILE" \
+                            "http://${TOMCAT_HOST}:${TOMCAT_PORT}/manager/text/deploy?path=/${APP_NAME}&update=true"
 
-                        echo "Copying WAR to Tomcat server..."
-                        scp -i "$SSH_KEY" \
-                            -o BatchMode=yes \
-                            "$WAR_FILE" \
-                            "$SSH_USER@$TOMCAT_HOST:/home/$SSH_USER/MyWebApp.war"
-
-                        echo "Deploying application..."
-                        ssh -i "$SSH_KEY" \
-                            -o BatchMode=yes \
-                            "$SSH_USER@$TOMCAT_HOST" \
-                            "sudo install -o tomcat -g tomcat -m 644 \
-                             /home/$SSH_USER/MyWebApp.war \
-                             /var/lib/tomcat10/webapps/ROOT.war &&
-                             sudo systemctl restart tomcat10"
-
-                        echo "Deployment commands completed."
+                        echo "Deployment request completed."
                     '''
                 }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    set -eu
+
+                    echo "Checking deployed application..."
+
+                    curl --fail --show-error \
+                        --connect-timeout 10 \
+                        --max-time 30 \
+                        "http://${TOMCAT_HOST}:${TOMCAT_PORT}/"
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'Build and deployment completed successfully!'
+            echo 'SUCCESS: Build, tests, and Tomcat deployment completed!'
+            echo 'Application URL: http://52.90.149.225:8080/'
         }
+
         failure {
-            echo 'Pipeline failed. Check Console Output for the first error.'
+            echo 'FAILURE: Check the Jenkins Console Output for the exact error.'
+        }
+
+        always {
+            echo 'Pipeline execution finished.'
         }
     }
 }
