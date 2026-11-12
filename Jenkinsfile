@@ -3,12 +3,13 @@ pipeline {
     agent any
 
     environment {
-        TOMCAT_URL = 'http://54.198.234.225:8080'
-        WAR_FILE = 'target/MyWebApp-0.0.1.war'
-        APP_PATH = '/myapp'
+        DOCKER_IMAGE = 'YOUR_DOCKERHUB_USERNAME/mywebapp'
+        DOCKER_SERVER = 'YOUR_DOCKER_EC2_PUBLIC_IP'
+        CONTAINER_NAME = 'mywebapp'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -17,45 +18,78 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'chmod +x mvnw'
-                sh './mvnw -B clean package -DskipTests'
+                sh '''
+                    chmod +x mvnw
+                    ./mvnw clean package -DskipTests
+                '''
             }
         }
 
         stage('Verify WAR') {
             steps {
-                sh 'test -f target/MyWebApp-0.0.1.war'
-                sh 'ls -lh target/*.war'
+                sh '''
+                    test -f target/MyWebApp-0.0.1.war
+                    ls -lh target/*.war
+                '''
             }
         }
 
-        stage('Deploy to Tomcat') {
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    docker build -t $DOCKER_IMAGE:latest .
+                '''
+            }
+        }
+
+        stage('Docker Push') {
             steps {
                 withCredentials([
-                    usernameColonPassword(
-                        credentialsId: 'tomcat-credentials',
-                        variable: 'TOMCAT_CREDS'
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
                     sh '''
-                        set +x
-                        curl --fail --show-error \
-                          --user "$TOMCAT_CREDS" \
-                          --upload-file "$WAR_FILE" \
-                          "$TOMCAT_URL/manager/text/deploy?path=$APP_PATH&update=true"
+                        echo "$DOCKER_PASS" | docker login \
+                            -u "$DOCKER_USER" --password-stdin
+
+                        docker push $DOCKER_IMAGE:latest
+
+                        docker logout
                     '''
                 }
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Deploy to Docker EC2') {
             steps {
-                sh '''
-                    sleep 5
-                    curl --fail --show-error \
-                      "$TOMCAT_URL$APP_PATH/"
-                '''
+                sshagent(credentials: ['docker-server-ssh']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=accept-new \
+                            ubuntu@$DOCKER_SERVER "
+                                docker pull $DOCKER_IMAGE:latest &&
+                                (docker rm -f $CONTAINER_NAME || true) &&
+                                docker run -d \
+                                    --name $CONTAINER_NAME \
+                                    --restart unless-stopped \
+                                    -p 8081:8080 \
+                                    $DOCKER_IMAGE:latest
+                            "
+                    '''
+                }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'SUCCESS: MyWebApp deployed using Docker!'
+        }
+
+        failure {
+            echo 'FAILED: Check Jenkins console output.'
         }
     }
 }
