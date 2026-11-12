@@ -16,28 +16,28 @@ pipeline {
             }
         }
 
-       
         stage('Build') {
             steps {
                 sh '''
                     export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
                     export PATH=$JAVA_HOME/bin:$PATH
-        
+
+                    echo "Checking Java version..."
                     java -version
                     javac -version
-        
+
                     chmod +x mvnw
                     ./mvnw clean package -DskipTests
                 '''
             }
         }
 
-
         stage('Verify WAR') {
             steps {
                 sh '''
                     test -f target/MyWebApp-0.0.1.war
-                    ls -lh target/*.war
+                    echo "WAR file created successfully!"
+                    ls -lh target/MyWebApp-0.0.1.war
                 '''
             }
         }
@@ -61,6 +61,7 @@ pipeline {
                 ]) {
                     sh '''
                         set +x
+
                         echo "$DOCKER_PASS" | docker login \
                             -u "$DOCKER_USER" --password-stdin
 
@@ -93,11 +94,15 @@ pipeline {
 
         stage('Verify Deployment') {
             steps {
-                sh '''
-                    sleep 10
-                    ssh ubuntu@$DOCKER_SERVER \
-                        "curl -f http://localhost:8081/"
-                '''
+                sshagent(credentials: ['docker-server-ssh']) {
+                    sh '''
+                        sleep 10
+
+                        ssh -o StrictHostKeyChecking=accept-new \
+                            ubuntu@$DOCKER_SERVER \
+                            "curl -f http://localhost:8081/"
+                    '''
+                }
             }
         }
     }
@@ -109,6 +114,10 @@ pipeline {
 
         failure {
             echo 'FAILED: Check Jenkins Console Output.'
+        }
+
+        always {
+            echo 'Jenkins CI/CD Pipeline execution completed.'
         }
     }
 }
