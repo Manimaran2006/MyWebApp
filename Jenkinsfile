@@ -3,8 +3,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'YOUR_DOCKERHUB_USERNAME/mywebapp'
-        DOCKER_SERVER = 'YOUR_DOCKER_EC2_PUBLIC_IP'
+        DOCKER_IMAGE = 'manimaran46/mywebapp'
+        DOCKER_SERVER = '34.203.223.233'
         CONTAINER_NAME = 'mywebapp'
     }
 
@@ -52,6 +52,7 @@ pipeline {
                     )
                 ]) {
                     sh '''
+                        set +x
                         echo "$DOCKER_PASS" | docker login \
                             -u "$DOCKER_USER" --password-stdin
 
@@ -81,6 +82,16 @@ pipeline {
                 }
             }
         }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    sleep 10
+                    ssh ubuntu@$DOCKER_SERVER \
+                        "curl -f http://localhost:8081/"
+                '''
+            }
+        }
     }
 
     post {
@@ -89,7 +100,7 @@ pipeline {
         }
 
         failure {
-            echo 'FAILED: Check Jenkins console output.'
+            echo 'FAILED: Check Jenkins Console Output.'
         }
     }
 }
