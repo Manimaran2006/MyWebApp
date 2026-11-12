@@ -4,7 +4,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'manimaran46/mywebapp'
-        DOCKER_SERVER = '34.203.223.233'
+        DOCKER_SERVER = '98.80.77.172'
         CONTAINER_NAME = 'mywebapp'
     }
 
