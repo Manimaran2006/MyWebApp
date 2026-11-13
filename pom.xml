@@ -70,7 +70,7 @@
     <repository>
         <id>nexus-releases</id>
         <name>Nexus Release Repository</name>
-        <url>http://52.91.16.85:8081/repository/maven-releases/</url>
+        <url>http://34.227.197.131:8081/repository/maven-releases/</url>
     </repository>
    </distributionManagement>
 
