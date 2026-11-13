@@ -67,11 +67,11 @@
 
     <!-- Nexus Repository -->
     <distributionManagement>
-        <repository>
-            <id>nexus-releases</id>
-            <name>Nexus Releases</name>
-            <url>http://13.221.137.96:8081/repository/myapp-releases/</url>
-        </repository>
-    </distributionManagement>
+    <repository>
+        <id>nexus-releases</id>
+        <name>Nexus Release Repository</name>
+        <url>http://52.91.16.85:8081/repository/maven-releases/</url>
+    </repository>
+   </distributionManagement>
 
 </project>
