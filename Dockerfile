@@ -3,7 +3,7 @@ FROM tomcat:11.0-jdk21-temurin
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-COPY target/MyWebApp-0.0.2.war /usr/local/tomcat/webapps/ROOT.war
+COPY target/MyWebApp-0.0.3.war /usr/local/tomcat/webapps/ROOT.war
 
 EXPOSE 8080
 
