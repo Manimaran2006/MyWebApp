@@ -6,6 +6,7 @@ pipeline {
         DOCKER_IMAGE = 'manimaran46/mywebapp'
         DOCKER_SERVER = '3.85.205.75'
         CONTAINER_NAME = 'mywebapp'
+        NEXUS_URL = 'http://52.91.16.85:8081'
     }
 
     stages {
@@ -54,6 +55,46 @@ pipeline {
                         ./mvnw sonar:sonar \
                             -Dsonar.projectKey=MyWebApp \
                             -Dsonar.projectName=MyWebApp
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Nexus') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'nexus-credentials',
+                        usernameVariable: 'NEXUS_USER',
+                        passwordVariable: 'NEXUS_PASS'
+                    )
+                ]) {
+                    sh '''
+                        set +x
+
+                        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+                        export PATH=$JAVA_HOME/bin:$PATH
+
+                        cat > nexus-settings.xml <<EOF
+<settings>
+    <servers>
+        <server>
+            <id>nexus-releases</id>
+            <username>${NEXUS_USER}</username>
+            <password>${NEXUS_PASS}</password>
+        </server>
+    </servers>
+</settings>
+EOF
+
+                        chmod 600 nexus-settings.xml
+
+                        ./mvnw -B \
+                            -s nexus-settings.xml \
+                            -DskipTests \
+                            deploy
+
+                        rm -f nexus-settings.xml
                     '''
                 }
             }
@@ -126,7 +167,7 @@ pipeline {
 
     post {
         success {
-            echo 'SUCCESS: MyWebApp deployed using Docker and analyzed by SonarQube!'
+            echo 'SUCCESS: MyWebApp deployed using Docker, analyzed by SonarQube, and published to Nexus!'
         }
 
         failure {
@@ -134,6 +175,7 @@ pipeline {
         }
 
         always {
+            sh 'rm -f nexus-settings.xml'
             echo 'Jenkins CI/CD Pipeline execution completed.'
         }
     }
