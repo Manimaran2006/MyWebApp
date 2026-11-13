@@ -42,6 +42,23 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+                        export PATH=$JAVA_HOME/bin:$PATH
+
+                        chmod +x mvnw
+
+                        ./mvnw sonar:sonar \
+                            -Dsonar.projectKey=MyWebApp \
+                            -Dsonar.projectName=MyWebApp
+                    '''
+                }
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 sh '''
@@ -109,7 +126,7 @@ pipeline {
 
     post {
         success {
-            echo 'SUCCESS: MyWebApp deployed using Docker!'
+            echo 'SUCCESS: MyWebApp deployed using Docker and analyzed by SonarQube!'
         }
 
         failure {
