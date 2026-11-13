@@ -108,6 +108,42 @@ EOF
             }
         }
 
+        
+        stage('Trivy Security Scan') {
+            steps {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'trivy-ssh-key',
+                        keyFileVariable: 'TRIVY_KEY',
+                        usernameVariable: 'TRIVY_USER'
+                    )
+                ]) {
+                    sh '''
+                        set -e
+        
+                        docker save -o mywebapp.tar manimaran46/mywebapp:latest
+        
+                        ssh -i "$TRIVY_KEY" \
+                            -o StrictHostKeyChecking=accept-new \
+                            $TRIVY_USER@172.31.28.164 \
+                            "mkdir -p ~/trivy-scan"
+        
+                        scp -i "$TRIVY_KEY" \
+                            -o StrictHostKeyChecking=accept-new \
+                            mywebapp.tar \
+                            $TRIVY_USER@172.31.28.164:~/trivy-scan/
+        
+                        ssh -i "$TRIVY_KEY" \
+                            -o StrictHostKeyChecking=accept-new \
+                            $TRIVY_USER@172.31.28.164 \
+                            "trivy image --input ~/trivy-scan/mywebapp.tar --severity HIGH,CRITICAL --exit-code 1"
+        
+                        rm -f mywebapp.tar
+                    '''
+                }
+            }
+        }
+
         stage('Docker Push') {
             steps {
                 withCredentials([
@@ -130,7 +166,7 @@ EOF
                 }
             }
         }
-
+        
         stage('Deploy to Docker EC2') {
             steps {
                 sshagent(credentials: ['docker-server-ssh']) {
