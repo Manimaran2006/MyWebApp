@@ -1,0 +1,25 @@
+---
+- name: Deploy MyWebApp using Docker
+  hosts: docker_server
+  become: yes
+
+  tasks:
+    - name: Pull latest Docker image
+      community.docker.docker_image:
+        name: manimaran46/mywebapp
+        tag: latest
+        source: pull
+
+    - name: Stop existing container
+      community.docker.docker_container:
+        name: mywebapp
+        state: absent
+
+    - name: Start application container
+      community.docker.docker_container:
+        name: mywebapp
+        image: manimaran46/mywebapp:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "8080:8080"
