@@ -35,9 +35,9 @@ pipeline {
         stage('Verify WAR') {
             steps {
                 sh '''
-                    test -f target/MyWebApp-0.0.5.war
+                    test -f target/MyWebApp-0.0.6.war
                     echo "WAR file created successfully!"
-                    ls -lh target/MyWebApp-0.0.5.war
+                    ls -lh target/MyWebApp-0.0.6.war
                 '''
             }
         }
