@@ -194,7 +194,7 @@ pipeline {
                     echo "Waiting for application startup..."
 
                     for i in $(seq 1 30); do
-                        if curl -fsS http://3.80.130.218:8080/ > /dev/null; then
+                        if curl -fsS http://54.242.151.138:8080/ > /dev/null; then
                             echo "SUCCESS: Application is responding!"
                             exit 0
                         fi
