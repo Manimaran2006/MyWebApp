@@ -36,7 +36,7 @@ pipeline {
         stage('Verify WAR') {
             steps {
                 sh '''
-                    test -f target/MyWebApp-0.0.4.war
+                    test -f target/MyWebApp-0.0.5.war
                     echo "WAR file created successfully!"
                     ls -lh target/MyWebApp-0.0.4.war
                 '''
@@ -76,16 +76,17 @@ pipeline {
                         export PATH=$JAVA_HOME/bin:$PATH
 
                         cat > nexus-settings.xml <<EOF
-<settings>
-    <servers>
-        <server>
-            <id>nexus-releases</id>
-            <username>${NEXUS_USER}</username>
-            <password>${NEXUS_PASS}</password>
-        </server>
-    </servers>
-</settings>
-EOF
+                        
+                        <settings>
+                            <servers>
+                                <server>
+                                    <id>nexus-releases</id>
+                                    <username>${NEXUS_USER}</username>
+                                    <password>${NEXUS_PASS}</password>
+                                </server>
+                            </servers>
+                        </settings>
+                        EOF
 
                         chmod 600 nexus-settings.xml
 
