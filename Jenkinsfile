@@ -75,16 +75,17 @@ pipeline {
                         export PATH=$JAVA_HOME/bin:$PATH
 
                         cat > nexus-settings.xml <<EOF
-<settings>
-    <servers>
-        <server>
-            <id>nexus-releases</id>
-            <username>${NEXUS_USER}</username>
-            <password>${NEXUS_PASS}</password>
-        </server>
-    </servers>
-</settings>
-EOF
+                        
+                        <settings>
+                            <servers>
+                                <server>
+                                   <id>nexus-snapshots</id>
+                                    <username>${NEXUS_USER}</username>
+                                    <password>${NEXUS_PASS}</password>
+                                </server>
+                            </servers>
+                        </settings>
+                        EOF
 
                         chmod 600 nexus-settings.xml
 
