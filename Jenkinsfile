@@ -4,9 +4,9 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'manimaran46/mywebapp'
-        ANSIBLE_SERVER = '172.31.22.118'
+        ANSIBLE_SERVER = '44.222.209.82'
         ANSIBLE_KEY = '/var/lib/jenkins/.ssh/ansible_key'
-        NEXUS_URL = 'http://3.90.248.73:8081'
+        NEXUS_URL = 'http://98.93.92.171:8081'
     }
 
     stages {
