@@ -32,15 +32,15 @@ pipeline {
             }
         }
 
-        stage('Verify WAR') {
-            steps {
-                sh '''
-                    test -f target/MyWebApp-0.0.6.war
-                    echo "WAR file created successfully!"
-                    ls -lh target/MyWebApp-0.0.6.war
-                '''
-            }
+       stage('Verify WAR') {
+        steps {
+            sh '''
+                test -f target/MyWebApp-0.0.6-SNAPSHOT.war
+                echo "WAR file created successfully!"
+                ls -lh target/MyWebApp-0.0.6-SNAPSHOT.war
+            '''
         }
+    }
 
         stage('SonarQube Analysis') {
             steps {
