@@ -185,21 +185,30 @@ EOF
             }
         }
 
+        
         stage('Verify Deployment') {
             steps {
                 sh '''
-                    echo "Checking Docker container on deployment EC2..."
-
-                    ssh -i "$ANSIBLE_KEY" \
-                        -o BatchMode=yes \
-                        -o StrictHostKeyChecking=yes \
-                        ubuntu@$ANSIBLE_SERVER \
-                        'ansible -i ~/ansible-project/inventory.ini \
-                         docker_server -m command -a "docker ps"'
+                    set -e
+        
+                    echo "Waiting for application startup..."
+        
+                    for i in $(seq 1 30); do
+                        if curl -fsS http://3.80.130.218:8080/ > /dev/null; then
+                            echo "SUCCESS: Application is responding!"
+                            exit 0
+                        fi
+        
+                        echo "Attempt $i: Application not ready yet..."
+                        sleep 5
+                    done
+        
+                    echo "ERROR: Application health check failed!"
+                    exit 1
                 '''
             }
         }
-    }
+
 
     post {
         success {
