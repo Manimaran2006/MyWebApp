@@ -16,7 +16,7 @@
     <!-- Project Information -->
     <groupId>com.example</groupId>
     <artifactId>MyWebApp</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
 
     <!-- WAR deployment for Tomcat -->
     <packaging>war</packaging>
