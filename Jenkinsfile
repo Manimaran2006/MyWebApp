@@ -4,9 +4,9 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'manimaran46/mywebapp'
-        DOCKER_SERVER = '34.207.113.251'
+        DOCKER_SERVER = '3.80.130.218'
         CONTAINER_NAME = 'mywebapp'
-        NEXUS_URL = 'http://34.227.197.131:8081'
+        NEXUS_URL = 'http://3.90.248.73:8081'
     }
 
     stages {
