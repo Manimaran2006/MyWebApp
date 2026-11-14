@@ -4,8 +4,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'manimaran46/mywebapp'
-        DOCKER_SERVER = '3.80.130.218'
-        CONTAINER_NAME = 'mywebapp'
+        ANSIBLE_SERVER = '172.31.22.118'
+        ANSIBLE_KEY = '/var/lib/jenkins/.ssh/ansible_key'
         NEXUS_URL = 'http://3.90.248.73:8081'
     }
 
@@ -23,7 +23,6 @@ pipeline {
                     export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
                     export PATH=$JAVA_HOME/bin:$PATH
 
-                    echo "Checking Java version..."
                     java -version
                     javac -version
 
@@ -76,17 +75,16 @@ pipeline {
                         export PATH=$JAVA_HOME/bin:$PATH
 
                         cat > nexus-settings.xml <<EOF
-                        
-                        <settings>
-                            <servers>
-                                <server>
-                                    <id>nexus-releases</id>
-                                    <username>${NEXUS_USER}</username>
-                                    <password>${NEXUS_PASS}</password>
-                                </server>
-                            </servers>
-                        </settings>
-                        EOF
+<settings>
+    <servers>
+        <server>
+            <id>nexus-releases</id>
+            <username>${NEXUS_USER}</username>
+            <password>${NEXUS_PASS}</password>
+        </server>
+    </servers>
+</settings>
+EOF
 
                         chmod 600 nexus-settings.xml
 
@@ -109,7 +107,6 @@ pipeline {
             }
         }
 
-        
         stage('Trivy Security Scan') {
             steps {
                 withCredentials([
@@ -121,24 +118,24 @@ pipeline {
                 ]) {
                     sh '''
                         set -e
-        
-                        docker save -o mywebapp.tar manimaran46/mywebapp:latest
-        
+
+                        docker save -o mywebapp.tar $DOCKER_IMAGE:latest
+
                         ssh -i "$TRIVY_KEY" \
                             -o StrictHostKeyChecking=accept-new \
                             $TRIVY_USER@172.31.28.164 \
                             "mkdir -p ~/trivy-scan"
-        
+
                         scp -i "$TRIVY_KEY" \
                             -o StrictHostKeyChecking=accept-new \
                             mywebapp.tar \
                             $TRIVY_USER@172.31.28.164:~/trivy-scan/
-        
+
                         ssh -i "$TRIVY_KEY" \
                             -o StrictHostKeyChecking=accept-new \
                             $TRIVY_USER@172.31.28.164 \
                             "trivy image --input ~/trivy-scan/mywebapp.tar --severity HIGH,CRITICAL --exit-code 1"
-        
+
                         rm -f mywebapp.tar
                     '''
                 }
@@ -167,44 +164,46 @@ pipeline {
                 }
             }
         }
-        
-        stage('Deploy to Docker EC2') {
+
+        stage('Deploy using Ansible') {
             steps {
-                sshagent(credentials: ['docker-server-ssh']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=accept-new \
-                            ubuntu@$DOCKER_SERVER "
-                                docker pull $DOCKER_IMAGE:latest &&
-                                (docker rm -f $CONTAINER_NAME || true) &&
-                                docker run -d \
-                                    --name $CONTAINER_NAME \
-                                    --restart unless-stopped \
-                                    -p 8081:8080 \
-                                    $DOCKER_IMAGE:latest
-                            "
-                    '''
-                }
+                sh '''
+                    set -e
+
+                    echo "Connecting to Ansible EC2..."
+
+                    ssh -i "$ANSIBLE_KEY" \
+                        -o BatchMode=yes \
+                        -o StrictHostKeyChecking=yes \
+                        ubuntu@$ANSIBLE_SERVER \
+                        'cd ~/MyWebApp &&
+                         git pull origin main &&
+                         ansible-playbook \
+                         -i ~/ansible-project/inventory.ini \
+                         ansible/deploy.yml'
+                '''
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sshagent(credentials: ['docker-server-ssh']) {
-                    sh '''
-                        sleep 10
+                sh '''
+                    echo "Checking Docker container on deployment EC2..."
 
-                        ssh -o StrictHostKeyChecking=accept-new \
-                            ubuntu@$DOCKER_SERVER \
-                            "curl -f http://localhost:8081/"
-                    '''
-                }
+                    ssh -i "$ANSIBLE_KEY" \
+                        -o BatchMode=yes \
+                        -o StrictHostKeyChecking=yes \
+                        ubuntu@$ANSIBLE_SERVER \
+                        'ansible -i ~/ansible-project/inventory.ini \
+                         docker_server -m command -a "docker ps"'
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'SUCCESS: MyWebApp deployed using Docker, analyzed by SonarQube, and published to Nexus!'
+            echo 'SUCCESS: MyWebApp built, scanned, published and deployed using Ansible!'
         }
 
         failure {
@@ -212,7 +211,7 @@ pipeline {
         }
 
         always {
-            sh 'rm -f nexus-settings.xml'
+            sh 'rm -f nexus-settings.xml mywebapp.tar'
             echo 'Jenkins CI/CD Pipeline execution completed.'
         }
     }
