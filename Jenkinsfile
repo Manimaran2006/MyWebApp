@@ -4,9 +4,9 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'manimaran46/mywebapp'
-        ANSIBLE_SERVER = '54.196.195.11'
+        ANSIBLE_SERVER = '13.222.158.219'
         ANSIBLE_KEY = '/var/lib/jenkins/.ssh/ansible_key'
-        NEXUS_URL = 'http://54.221.19.110:8081'
+        NEXUS_URL = 'http://44.220.145.57:8081'
     }
 
     stages {
@@ -194,7 +194,7 @@ pipeline {
                     echo "Waiting for application startup..."
 
                     for i in $(seq 1 30); do
-                        if curl -fsS http://54.221.174.67:8080/ > /dev/null; then
+                        if curl -fsS http://100.48.86.243:8080/ > /dev/null; then
                             echo "SUCCESS: Application is responding!"
                             exit 0
                         fi
